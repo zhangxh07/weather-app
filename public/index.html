@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天气查询应用</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #66ea83 0%, #854ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            display: none;
+        }
+
+        .error {
+            background: #ffeaea;
+            color: #d32f2f;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .weather-display {
+            display: none;
+        }
+
+        .current-weather {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .location {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .temperature {
+            font-size: 4em;
+            font-weight: bold;
+            color: #333;
+            margin: 20px 0;
+        }
+
+        .condition {
+            font-size: 1.5em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .detail-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .detail-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            color: #333;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .forecast {
+            margin-top: 30px;
+        }
+
+        .forecast h3 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .forecast-days {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .forecast-day {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .day-name {
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .day-temp {
+            font-size: 1.5em;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .day-condition {
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .temperature {
+                font-size: 3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌤️ 天气查询</h1>
+            <p class="subtitle">实时天气信息和预报</p>
+        </header>
+
+        <div class="search-box">
+            <input
+                type="text"
+                id="locationInput"
+                placeholder="输入城市名称 (例如: 北京, Tokyo, New York)"
+                autocomplete="off"
+            >
+            <button onclick="searchWeather()" id="searchBtn">查询天气</button>
+        </div>
+
+        <div class="loading" id="loading">
+            正在加载天气数据...
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="weather-display" id="weatherDisplay">
+            <div class="current-weather" id="currentWeather">
+                <!-- 当前天气信息会动态填充 -->
+            </div>
+
+            <div class="forecast" id="forecast">
+                <!-- 天气预报信息会动态填充 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        // 添加在 script 标签的开头部分
+        function formatLocalTime(timeString) {
+            if (!timeString) return '暂无时间信息';
+
+            try {
+                // 处理 WeatherAPI 返回的时间格式
+                // 格式1: "YYYY-MM-DD HH:MM" (current.localtime)
+                // 格式2: "YYYY-MM-DD HH:MM" (current.last_updated)
+
+                // 方法1: 直接解析
+                const [datePart, timePart] = timeString.split(' ');
+                const [year, month, day] = datePart.split('-').map(num => parseInt(num, 10));
+                const [hour, minute] = timePart.split(':').map(num => parseInt(num, 10));
+
+                const date = new Date(year, month - 1, day, hour, minute);
+                // 格式化为本地时间字符串
+                return date.toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+            } catch (error) {
+                console.warn('时间格式化失败:', error);
+                return timeString; // 返回原始字符串
+            }
+        }
+
+
+        async function searchWeather() {
+            const location = document.getElementById('locationInput').value.trim();
+            if (!location) {
+                showError('请输入城市名称');
+                return;
+            }
+
+            // 显示加载状态
+            showLoading(true);
+            hideError();
+
+            try {
+                // 查询当前天气
+                const currentWeather = await fetchWeather('/api/weather/current', { location });
+                displayCurrentWeather(currentWeather);
+
+                // 查询天气预报
+                const forecast = await fetchWeather('/api/weather/forecast', { location, days: 3 });
+                displayForecast(forecast);
+
+                // 显示结果
+                document.getElementById('weatherDisplay').style.display = 'block';
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function fetchWeather(endpoint, params) {
+            const queryString = new URLSearchParams(params).toString();
+            const response = await fetch(`${endpoint}?${queryString}`);
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || '获取天气数据失败');
+            }
+
+            return await response.json();
+        }
+
+
+        function displayCurrentWeather(weather) {
+            const container = document.getElementById('currentWeather');
+
+            container.innerHTML = `
+                <div class="location">
+                    ${weather.location.name}, ${weather.location.country}
+                </div>
+                <div class="local-time">
+                    当地时间: ${new Date(weather.location.localTime).toLocaleString()}
+                </div>
+                <div class="temperature">
+                    ${weather.current.temp_c}°C
+                </div>
+                <div class="condition">
+                    ${weather.current.condition.text}
+                </div>
+                <div class="weather-details">
+                    <div class="detail-card">
+                        <div class="detail-label">体感温度</div>
+                        <div class="detail-value">${weather.current.feelslike_c}°C</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">湿度</div>
+                        <div class="detail-value">${weather.current.humidity}%</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">风速</div>
+                        <div class="detail-value">${weather.current.wind_kph} km/h</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">降水量</div>
+                        <div class="detail-value">${weather.current.precip_mm} mm</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">气压</div>
+                        <div class="detail-value">${weather.current.pressure_mb} hPa</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">能见度</div>
+                        <div class="detail-value">${weather.current.visibility_km} km</div>
+                    </div>
+                </div>
+                <div class="last-updated" style="margin-top: 25px;">
+                    最近更新时间: ${new Date(weather.lastUpdated).toLocaleString()}
+                </div>
+            `;
+        }
+
+        function displayForecast(forecast) {
+            const container = document.getElementById('forecast');
+
+            if (!forecast.forecast || forecast.forecast.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.innerHTML = `
+                <h3>📅 未来${forecast.forecast.length}天预报</h3>
+                <div class="forecast-days">
+                    ${forecast.forecast.map(day => `
+                        <div class="forecast-day">
+                            <div class="day-name">${formatDate(day.date)}</div>
+                            <div class="day-condition">${day.day.condition.text}</div>
+                            <div class="day-temp">
+                                ${day.day.mintemp_c}°C - ${day.day.maxtemp_c}°C
+                            </div>
+                            <div class="day-details">
+                                <div>💧 湿度: ${day.day.avghumidity}%</div>
+                                <div>💨 风速: ${day.day.maxwind_kph} km/h</div>
+                                <div>🌧️ 降水: ${day.day.daily_chance_of_rain}%</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function formatDate(dateString) {
+            try {
+                // 处理预报日期格式 "YYYY-MM-DD"
+                const [year, month, day] = dateString.split('-').map(num => parseInt(num, 10));
+                const date = new Date(year, month - 1, day);
+                const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
+                return `${month}/${day} ${days[date.getDay()]}`;
+            } catch (error) {
+                console.warn('日期格式化失败:', error);
+                return dateString;
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('searchBtn').disabled = show;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+
+        // 支持回车键搜索
+        document.getElementById('locationInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchWeather();
+            }
+        });
+
+        // 页面加载时自动获取当前位置天气（需要用户授权）
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const { latitude, longitude } = position.coords;
+                document.getElementById('locationInput').value = `${latitude},${longitude}`;
+                await searchWeather();
+            }, () => {
+                // 如果用户拒绝位置权限，默认查询北京天气
+                document.getElementById('locationInput').value = '北京';
+            });
+        } else {
+            document.getElementById('locationInput').value = '北京';
+        }
+    </script>
+</body>
+</html>
