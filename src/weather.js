@@ -69,6 +69,7 @@ class WeatherAPI {
                      q: query
                  }
              });
+            return response.data
          } catch (error) {
             console.error('搜索城市失败:', error.message);
             throw error;
