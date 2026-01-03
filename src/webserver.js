@@ -26,6 +26,12 @@ class WeatherWebServer {
         this.app.get('/', (req, res) => {
             res.sendFile(path.join(__dirname, '../public/index.html'));
         });
+
+        // 历史记录页面
+        this.app.get('/history', (req, res) => {
+            res.sendFile(path.join(__dirname, '../public/history.html'));
+        });
+
         //获取当前天气
         this.app.get('/api/weather/current', async (req, res) => {
             try {

@@ -98,8 +98,9 @@ class WeatherAPI {
                   text: current.condition.text,
                   icon: current.condition.icon
                 },
-                feelslike_c: current.feelslike_c,
+                heatindex_c: current.heatindex_c,
                 feelslike_f: current.feelslike_f,
+                dewpoint_c: current.dewpoint_c,
                 humidity: current.humidity,
                 wind_kph: current.wind_kph,
                 wind_dir: current.wind_dir,

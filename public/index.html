@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #66ea83 0%, #854ba2 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -225,6 +225,11 @@
         <header>
             <h1>🌤️ 天气查询</h1>
             <p class="subtitle">实时天气信息和预报</p>
+            <div class="history-link">
+                <a href="/history" style="color: #667eea; text-decoration: none; font-weight: bold;">
+            📜 查询历史记录
+            </a>
+             </div>
         </header>
 
         <div class="search-box">
@@ -348,7 +353,7 @@
                 <div class="weather-details">
                     <div class="detail-card">
                         <div class="detail-label">体感温度</div>
-                        <div class="detail-value">${weather.current.feelslike_c}°C</div>
+                        <div class="detail-value">${weather.current.heatindex_c}°C</div>
                     </div>
                     <div class="detail-card">
                         <div class="detail-label">湿度</div>
@@ -369,6 +374,14 @@
                     <div class="detail-card">
                         <div class="detail-label">能见度</div>
                         <div class="detail-value">${weather.current.visibility_km} km</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">紫外线指数</div>
+                        <div class="detail-value">${weather.current.uv}</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">露点/摄氏度</div>
+                        <div class="detail-value">${weather.current.dewpoint_c}°C</div>
                     </div>
                 </div>
                 <div class="last-updated" style="margin-top: 25px;">
