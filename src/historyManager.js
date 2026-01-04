@@ -6,7 +6,7 @@ class HistoryManager {
   constructor() {
     this.historyFile = path.join(__dirname, '../data/history.json');
     this.history = [];
-    this.maxRecords = 100;
+    this.maxRecords = 50;
     this.init();
   }
 
@@ -31,7 +31,7 @@ class HistoryManager {
         console.log(`📖 已加载 ${this.history.length} 条历史记录`);
       } catch (error) {
         // 文件不存在，创建空的历史记录
-        console.log('📝 创建新的历史记录文件');
+        console.log('📝 查询记录文件不存在，请创建新的历史记录文件');
         await this.saveHistory();
       }
     } catch (error) {
@@ -50,6 +50,8 @@ class HistoryManager {
         JSON.stringify(this.history, null, 2),
         { encoding: 'utf8' }
       );
+
+
       return true;
     } catch (error) {
       console.error('保存历史记录失败:', error.message);
@@ -144,6 +146,11 @@ class HistoryManager {
    * 获取所有历史记录
    */
   async getAllRecords(options = {}) {
+    //更新history[]缓存
+    const data = await fs.readFile(this.historyFile, { encoding: 'utf8' });
+    this.history = JSON.parse(data);
+    console.log(`📖 已加载 ${this.history.length} 条历史记录`);
+
     try {
       let records = [...this.history];
 

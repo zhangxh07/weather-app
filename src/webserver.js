@@ -46,7 +46,10 @@ class WeatherWebServer {
                 }
                 const weather = await this.weatherAPI.getCurrentWeather(location);
 
-                // 保存历史记录（异步执行，不阻塞响应）
+                //console.log("数据返回success")
+                res.json(weather);
+
+                //保存历史记录（异步执行，不阻塞响应）
                 if (saveHistory === 'true') {
                   this.historyManager.addRecord(weather, location).catch(error => {
                     console.error('保存历史记录失败:', error.message);
@@ -55,8 +58,7 @@ class WeatherWebServer {
                 // if (saveHistory === 'true' || saveHistory === true) {
                 //    this.historyManager.addRecord(weather, location);
                 // }
-                console.log("数据返回success")
-                res.json(weather);
+
             } catch (error) {
                 res.status(500).json({
                     error: error.response?.data?.error?.message || 'Failed to fetch weather data'
@@ -75,6 +77,8 @@ class WeatherWebServer {
 
                 const forecast = await this.weatherAPI.getForecast(location, parseInt(days));
 
+                res.json(forecast);
+
                 //保存历史记录（异步执行，不阻塞响应）
                 if (saveHistory === 'true') {
                   this.historyManager.addForecastRecord(forecast, location, days).catch(error => {
@@ -82,7 +86,6 @@ class WeatherWebServer {
                   });
                 }
 
-                res.json(forecast);
             } catch (error) {
                 res.status(500).json({
                     error: error.response?.data?.error?.message || 'Failed to fetch forecast data'

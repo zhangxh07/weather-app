@@ -324,8 +324,19 @@
         async function fetchWeather(endpoint, params) {
             const queryString = new URLSearchParams(params).toString();
 
+            //创建超时控制器
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(),10000);
+
             try {
-                const response = await fetch(`${endpoint}?${queryString}`);
+                const response = await fetch(`${endpoint}?${queryString}`,{
+                    signal: controller.signal,
+                    headers: {
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+
+                clearTimeout(timeoutId);
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
@@ -334,10 +345,17 @@
 
                 return await response.json();
             } catch (error) {
+                clearTimeout(timeoutId);
+
+                if (error.name === 'AbortError') {
+                    throw new Error('请求超时，请稍后重试');
+                }
+
                 console.error('请求失败:', {
                     endpoint,
                     params,
-                    error: error.message
+                    error: error.message,
+                    errorName: error.name
                 });
                 throw new Error(error.message || '获取天气数据失败');
             }
