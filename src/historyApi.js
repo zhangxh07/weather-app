@@ -9,21 +9,21 @@ class HistoryAPI {
   }
 
   setupRoutes() {
-    // 获取所有历史记录
+    // 修改 /history 路由使用新的分页方法
     this.router.get('/history', async (req, res) => {
       try {
         const {
-          limit = 50,
-          offset = 0,
+          page = 1,
+          limit = 20,
           queryType,
           startDate,
           endDate,
           search
         } = req.query;
 
-        const records = await this.historyManager.getAllRecords({
+        const result = await this.historyManager.getPaginatedRecords({
+          page: parseInt(page),
           limit: parseInt(limit),
-          offset: parseInt(offset),
           queryType,
           startDate,
           endDate,
@@ -32,10 +32,10 @@ class HistoryAPI {
 
         res.json({
           success: true,
-          data: records,
-          total: records.length
+          data: result
         });
       } catch (error) {
+        console.error('获取历史记录失败:', error.message);
         res.status(500).json({
           success: false,
           error: '获取历史记录失败'

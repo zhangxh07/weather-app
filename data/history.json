@@ -1,5 +1,58 @@
 [
   {
+    "id": "74e23629-26ea-4062-8b85-9bf6d2ebba0e",
+    "query": "休斯顿",
+    "location": {
+      "name": "休斯顿",
+      "country": "美国",
+      "region": "Texas"
+    },
+    "weather": {
+      "temp_c": 11.2,
+      "condition": "阴天",
+      "icon": "//cdn.weatherapi.com/weather/64x64/night/122.png",
+      "forecastDays": "3"
+    },
+    "timestamp": "2026-01-04T13:15:52.817Z",
+    "timestampDisplay": "2026/1/4 21:15:52",
+    "queryType": "forecast"
+  },
+  {
+    "id": "92f637fe-7873-4412-ace6-94f1baec9ece",
+    "query": "休斯顿",
+    "location": {
+      "name": "休斯顿",
+      "country": "美国",
+      "region": "Texas"
+    },
+    "weather": {
+      "temp_c": 11.2,
+      "condition": "阴天",
+      "icon": "//cdn.weatherapi.com/weather/64x64/night/122.png"
+    },
+    "timestamp": "2026-01-04T13:15:52.066Z",
+    "timestampDisplay": "2026/1/4 21:15:52",
+    "queryType": "current"
+  },
+  {
+    "id": "7f5c24f4-d3db-498c-b623-e8a8afbdb3f2",
+    "query": "北京",
+    "location": {
+      "name": "北京",
+      "country": "中国",
+      "region": "Beijing"
+    },
+    "weather": {
+      "temp_c": -4,
+      "condition": "局部多云",
+      "icon": "//cdn.weatherapi.com/weather/64x64/night/116.png",
+      "forecastDays": "3"
+    },
+    "timestamp": "2026-01-04T13:15:28.804Z",
+    "timestampDisplay": "2026/1/4 21:15:28",
+    "queryType": "forecast"
+  },
+  {
     "id": "600942fb-b03b-4d3c-8236-4f55d9ab4835",
     "query": "武汉",
     "location": {
@@ -800,40 +853,6 @@
     },
     "timestamp": "2026-01-04T07:17:00.459Z",
     "timestampDisplay": "2026/1/4 15:17:00",
-    "queryType": "current"
-  },
-  {
-    "id": "085c1580-0b4c-4274-8f8d-467e94fcd649",
-    "query": "台北",
-    "location": {
-      "name": "台北市",
-      "country": "台湾",
-      "region": "T'ai-pei"
-    },
-    "weather": {
-      "temp_c": 21,
-      "condition": "晴天",
-      "icon": "//cdn.weatherapi.com/weather/64x64/day/113.png"
-    },
-    "timestamp": "2026-01-04T07:16:14.603Z",
-    "timestampDisplay": "2026/1/4 15:16:14",
-    "queryType": "current"
-  },
-  {
-    "id": "99a5ed75-6bef-4841-82da-124f2bfad9c5",
-    "query": "上海",
-    "location": {
-      "name": "上海",
-      "country": "中国",
-      "region": "Shanghai"
-    },
-    "weather": {
-      "temp_c": 10.3,
-      "condition": "多云",
-      "icon": "//cdn.weatherapi.com/weather/64x64/day/119.png"
-    },
-    "timestamp": "2026-01-04T07:15:47.667Z",
-    "timestampDisplay": "2026/1/4 15:15:47",
     "queryType": "current"
   }
 ]

@@ -329,6 +329,69 @@ class HistoryManager {
       return null;
     }
   }
+
+  // 在 HistoryManager 类中添加以下方法
+
+  /**
+   * 获取分页历史记录
+   * @param {Object} options - 筛选选项
+   * @param {number} options.page - 页码（从1开始）
+   * @param {number} options.limit - 每页条数
+   * @returns {Object} 包含记录和分页信息的对象
+   */
+  async getPaginatedRecords(options = {}) {
+    try {
+      const page = Math.max(1, options.page || 1);
+      const limit = Math.max(1, Math.min(100, options.limit || 20));
+      const offset = (page - 1) * limit;
+
+      // 获取所有符合条件的记录（不应用分页）
+      const allRecords = await this.getAllRecords({
+        queryType: options.queryType,
+        startDate: options.startDate,
+        endDate: options.endDate,
+        search: options.search
+      });
+
+      const total = allRecords.length;
+      const totalPages = Math.ceil(total / limit);
+
+      // 获取当前页的记录（应用分页）
+      const paginatedRecords = await this.getAllRecords({
+        queryType: options.queryType,
+        startDate: options.startDate,
+        endDate: options.endDate,
+        search: options.search,
+        limit: limit,
+        offset: offset
+      });
+
+      return {
+        records: paginatedRecords,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1
+        }
+      };
+    } catch (error) {
+      console.error('获取分页历史记录失败:', error.message);
+      return {
+        records: [],
+        pagination: {
+          page: 1,
+          limit: 20,
+          total: 0,
+          totalPages: 1,
+          hasNext: false,
+          hasPrev: false
+        }
+      };
+    }
+  }
 }
 
 module.exports = HistoryManager;

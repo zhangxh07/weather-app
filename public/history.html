@@ -325,6 +325,129 @@
             gap: 10px;
         }
 
+        /* 分页样式增强 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .page-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .page-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #ccc;
+        }
+
+        .page-info {
+            color: #666;
+            font-size: 14px;
+            background: #f8f9fa;
+            padding: 8px 16px;
+            border-radius: 8px;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .page-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-left: 20px;
+        }
+
+        .page-input {
+            width: 60px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .go-btn {
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .go-btn:hover {
+            background: #218838;
+        }
+
+        .limit-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: 20px;
+        }
+
+        .limit-selector select {
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        /* 更新历史记录列表样式以适应分页 */
+        .history-list {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            min-height: 400px; /* 确保有足够高度 */
+        }
+
+        .history-footer {
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
         @media (max-width: 768px) {
             .history-header, .history-item {
                 grid-template-columns: 40px 1fr;
@@ -347,6 +470,20 @@
                 flex-direction: column;
                 gap: 10px;
                 align-items: stretch;
+            }
+            .pagination {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .page-controls, .page-inputs, .limit-selector {
+                margin: 5px 0;
+            }
+
+            .page-btn {
+                min-width: 70px;
+                padding: 6px 12px;
+                font-size: 14px;
             }
         }
     </style>
@@ -449,19 +586,57 @@
             <div id="historyList">
                 <!-- 历史记录会动态填充 -->
             </div>
+            <div class="history-footer" id="historyFooter">
+                <!-- 分页信息会动态填充 -->
+            </div>
         </div>
 
         <div class="pagination">
-            <button class="page-btn" id="prevPage" onclick="changePage(-1)" disabled>上一页</button>
-            <span class="page-info" id="pageInfo">第 1 页</span>
-            <button class="page-btn" id="nextPage" onclick="changePage(1)" disabled>下一页</button>
+            <div class="page-controls">
+                <button class="page-btn" id="firstPage" onclick="goToPage(1)" disabled>首页</button>
+                <button class="page-btn" id="prevPage" onclick="goToPage(currentPage - 1)" disabled>上一页</button>
+            </div>
+
+            <div class="page-info" id="pageInfo">
+                第 <span id="currentPageNum">1</span> 页 / 共 <span id="totalPages">1</span> 页
+                <span id="totalRecords"> (共 0 条记录)</span>
+            </div>
+
+            <div class="page-controls">
+                <button class="page-btn" id="nextPage" onclick="goToPage(currentPage + 1)" disabled>下一页</button>
+                <button class="page-btn" id="lastPage" onclick="goToPage(totalPages)" disabled>末页</button>
+            </div>
+
+            <div class="page-inputs">
+                <input
+                    type="number"
+                    id="jumpPageInput"
+                    class="page-input"
+                    min="1"
+                    value="1"
+                    onkeypress="handlePageInputKeypress(event)"
+                >
+                <button class="go-btn" onclick="jumpToPage()">跳转</button>
+            </div>
+
+            <div class="limit-selector">
+                <span>每页显示:</span>
+                <select id="pageSizeSelect" onchange="changePageSize()">
+                    <option value="10">10 条</option>
+                    <option value="20" selected>20 条</option>
+                    <option value="50">50 条</option>
+                    <option value="100">100 条</option>
+                </select>
+            </div>
         </div>
     </div>
 
     <script>
+        // 分页状态变量
         let currentPage = 1;
         let totalPages = 1;
-        let pageSize = 10;
+        let totalRecords = 0;
+        let pageSize = 20;
         let selectedItems = new Set();
         let debounceTimer = null;
 
@@ -514,23 +689,31 @@
         }
 
         // 加载历史记录
+        // 加载历史记录（支持分页）
         async function loadHistory() {
             const historyList = document.getElementById('historyList');
+            const historyFooter = document.getElementById('historyFooter');
+
+            // 显示加载状态
             historyList.innerHTML = '<div class="loading">正在加载历史记录...</div>';
+            historyFooter.innerHTML = '';
 
             try {
                 const filters = getFilters();
                 const response = await fetch(
-                    `/api/history?limit=${pageSize}&offset=${(currentPage - 1) * pageSize}&` +
+                    `/api/history?page=${currentPage}&limit=${pageSize}&` +
                     new URLSearchParams(filters).toString()
                 );
 
                 if (!response.ok) throw new Error('获取历史记录失败');
 
-                const data = await response.json();
-                if (data.success) {
-                    renderHistory(data.data);
-                    updatePagination(data.total);
+                const result = await response.json();
+                if (result.success) {
+                    const { records, pagination } = result.data;
+                    renderHistory(records);
+                    updatePagination(pagination);
+                } else {
+                    throw new Error(result.error || '获取历史记录失败');
                 }
             } catch (error) {
                 historyList.innerHTML = `
@@ -539,18 +722,28 @@
                         <button class="btn" onclick="loadHistory()">重试</button>
                     </div>
                 `;
+                updatePagination({
+                    page: 1,
+                    total: 0,
+                    totalPages: 1,
+                    hasNext: false,
+                    hasPrev: false
+                });
             }
         }
 
         // 渲染历史记录列表
         function renderHistory(records) {
             const historyList = document.getElementById('historyList');
+            const historyFooter = document.getElementById('historyFooter');
 
             if (!records || records.length === 0) {
                 historyList.innerHTML = '<div class="no-data">暂无查询记录</div>';
+                historyFooter.innerHTML = '<div>没有找到任何历史记录</div>';
                 return;
             }
 
+            // 渲染记录列表
             historyList.innerHTML = records.map(record => `
                 <div class="history-item" id="record-${record.id}">
                     <div>
@@ -596,6 +789,81 @@
                     </div>
                 </div>
             `).join('');
+
+            // 更新页脚信息
+            const startRecord = (currentPage - 1) * pageSize + 1;
+            const endRecord = startRecord + records.length - 1;
+            historyFooter.innerHTML = `
+                显示 ${startRecord} - ${endRecord} 条记录，共 ${totalRecords} 条
+            `;
+        }
+
+        // 更新分页控件状态
+        function updatePagination(pagination) {
+            currentPage = pagination.page || 1;
+            totalPages = pagination.totalPages || 1;
+            totalRecords = pagination.total || 0;
+
+            // 更新显示信息
+            document.getElementById('currentPageNum').textContent = currentPage;
+            document.getElementById('totalPages').textContent = totalPages;
+            document.getElementById('totalRecords').textContent = ` (共 ${totalRecords} 条记录)`;
+
+            // 更新跳转输入框
+            document.getElementById('jumpPageInput').value = currentPage;
+            document.getElementById('jumpPageInput').max = totalPages;
+
+            // 更新按钮状态
+            document.getElementById('firstPage').disabled = currentPage <= 1;
+            document.getElementById('prevPage').disabled = currentPage <= 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages;
+            document.getElementById('lastPage').disabled = currentPage >= totalPages;
+
+            // 更新每页显示数选择
+            document.getElementById('pageSizeSelect').value = pageSize;
+        }
+
+        // 跳转到指定页面
+        function goToPage(page) {
+            const targetPage = Math.max(1, Math.min(page, totalPages));
+            if (targetPage !== currentPage) {
+                currentPage = targetPage;
+                loadHistory();
+            }
+        }
+
+        // 输入框跳转
+        function jumpToPage() {
+            const input = document.getElementById('jumpPageInput');
+            const targetPage = parseInt(input.value);
+
+            if (isNaN(targetPage) || targetPage < 1 || targetPage > totalPages) {
+                alert(`请输入 1 到 ${totalPages} 之间的页码`);
+                input.value = currentPage;
+                return;
+            }
+
+            goToPage(targetPage);
+        }
+
+        // 处理输入框回车键
+        function handlePageInputKeypress(event) {
+            if (event.key === 'Enter') {
+                jumpToPage();
+            }
+        }
+
+        // 改变每页显示数量
+        function changePageSize() {
+            const newPageSize = parseInt(document.getElementById('pageSizeSelect').value);
+
+            if (newPageSize !== pageSize) {
+                pageSize = newPageSize;
+                currentPage = 1; // 重置到第一页
+                selectedItems.clear(); // 清空选择
+                document.getElementById('selectAll').checked = false;
+                loadHistory();
+            }
         }
 
         // 获取筛选条件
@@ -671,6 +939,13 @@
                 if (data.success) {
                     alert('记录删除成功');
                     selectedItems.delete(id);
+
+                    // 重新加载数据（如果删除的是当前页最后一条，需要调整页码）
+                    const currentRecords = document.querySelectorAll('.history-item').length;
+                    if (currentRecords === 1 && currentPage > 1) {
+                        currentPage--;
+                    }
+
                     await Promise.all([loadHistory(), loadStats()]);
                 } else {
                     alert('删除失败: ' + data.error);
@@ -706,6 +981,7 @@
                     alert(`成功删除 ${data.deletedCount} 条记录`);
                     selectedItems.clear();
                     document.getElementById('selectAll').checked = false;
+                    //重新加载数据
                     await Promise.all([loadHistory(), loadStats()]);
                 } else {
                     alert('批量删除失败: ' + data.error);
@@ -755,18 +1031,6 @@
             loadStats();
         }
 
-        // 更新分页控件
-        function updatePagination(total) {
-            totalPages = Math.ceil(total / pageSize);
-
-            const prevBtn = document.getElementById('prevPage');
-            const nextBtn = document.getElementById('nextPage');
-            const pageInfo = document.getElementById('pageInfo');
-
-            prevBtn.disabled = currentPage <= 1;
-            nextBtn.disabled = currentPage >= totalPages;
-            pageInfo.textContent = `第 ${currentPage} 页，共 ${totalPages} 页`;
-        }
 
         // 切换页面
         function changePage(delta) {
