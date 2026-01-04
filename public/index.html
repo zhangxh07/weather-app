@@ -323,14 +323,24 @@
 
         async function fetchWeather(endpoint, params) {
             const queryString = new URLSearchParams(params).toString();
-            const response = await fetch(`${endpoint}?${queryString}`);
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || '获取天气数据失败');
+            try {
+                const response = await fetch(`${endpoint}?${queryString}`);
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('请求失败:', {
+                    endpoint,
+                    params,
+                    error: error.message
+                });
+                throw new Error(error.message || '获取天气数据失败');
             }
-
-            return await response.json();
         }
 
 
