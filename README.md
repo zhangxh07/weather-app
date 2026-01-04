@@ -23,6 +23,7 @@ npm run web
 # 或
 node src/index.js web
 #然后在浏览器中访问：http://localhost:3000
+#历史记录查询页面：http://localhost:3000/history
 ```
 ### 开发模式
 ```bash
@@ -33,5 +34,5 @@ npm run dev:cli  # CLI 版本开发
 
 ### 1. 安装依赖
 ```bash
-npm install axios express dotenv cors commander
+npm install axios express dotenv cors commander uuid
 npm install -D nodemon
