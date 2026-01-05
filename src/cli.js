@@ -1,9 +1,11 @@
 const readline = require('readline');
 const WeatherAPI = require('./weather');
+const HistoryManager = require("./historyManager");
 
 class WeatherCLI {
     constructor() {
         this.weatherAPI = new WeatherAPI();
+        this.historyManager = new HistoryManager();
         this.rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout
@@ -25,7 +27,10 @@ class WeatherCLI {
         console.log('1. 查询当前天气');
         console.log('2. 查询天气预报');
         console.log('3. 搜索城市');
-        console.log('4. 退出');
+        console.log('4. 查看历史记录');
+        console.log('5. 查看历史统计');
+        console.log('6. 清空历史记录');
+        console.log('7. 退出');
 
         this.rl.question('请输入选项编号',async (choice) => {
             switch (choice.trim()) {
@@ -35,10 +40,19 @@ class WeatherCLI {
                 case '2':
                     await this.queryForecast();
                     break;
-                case `3`:
+                case '3':
                     await this.searchCity();
                     break;
                 case '4':
+                    await this.viewHistory();
+                    break;
+                case '5':
+                    await this.viewStats();
+                    break;
+                case '6':
+                    await this.clearHistory();
+                    break;
+                case '7':
                     console.log('再见！👋');
                     this.rl.close();
                     process.exit(0);
@@ -63,6 +77,9 @@ class WeatherCLI {
            try {
                console.log(`\n正在查询 ${location} 的天气...`);
                const weather = await this.weatherAPI.getCurrentWeather(location);
+
+               // 保存历史记录
+                await this.historyManager.addRecord(weather, location);
 
                 console.log('\n📊 天气信息');
                 console.log('='.repeat(40));
@@ -104,6 +121,9 @@ class WeatherCLI {
                try {
                    console.log(`\n正在查询 ${location} 的${daysNum}天预报...`);
                    const forecast = await this.weatherAPI.getForecast(location,daysNum);
+
+                   //保存查询历史记录
+                   //await this.historyManager.addForecastRecord(forecast, location, daysNum)
 
                    console.log(`\n📅 ${location} 天气预报`);
                    console.log('='.repeat(50));
@@ -164,6 +184,89 @@ class WeatherCLI {
           }
         });
    }
+
+    /**
+     * 查看历史记录
+     * @returns {Promise<void>}
+     */
+
+   async viewHistory() {
+       try {
+           console.log('\n📜 查询历史记录');
+           console.log('='.repeat(60));
+
+           const records = await this.historyManager.getAllRecords({ limit: 20 });
+
+           if (records.length === 0 ) {
+               console.log('暂无查询记录');
+           }else {
+               records.forEach((record,index) => {
+                   console.log(`\n${index + 1}. ${record.location.name}, ${record.location.country}`);
+                   console.log(`   时间: ${record.timestampDisplay}`);
+                  console.log(`   天气: ${record.weather.condition} ${record.weather.temp_c}°C`);
+                  console.log(`   类型: ${record.queryType === 'current' ? '当前天气' : '天气预报'}`);
+               });
+           }
+           console.log('\n' + '='.repeat(60));
+       } catch (error) {
+            console.error('❌ 获取历史记录失败:', error.message);
+       } finally {
+           setTimeout(() => this.showMeun(), 1000);
+       }
+   }
+
+    /**
+     * 清空历史记录
+     */
+    async clearHistory() {
+        this.rl.question('确定要清空所有历史记录吗？(y/N): ', async (answer) => {
+            if (answer.toLowerCase() === 'y') {
+                try {
+                    const cleared = await this.historyManager.clearAll();
+                    if (cleared) {
+                        console.log('✅ 历史记录已清空');
+                    } else {
+                        console.log('❌ 清空记录失败');
+                    }
+                } catch (error) {
+                    console.error('❌ 清空失败:', error.message);
+                }
+            } else {
+                console.log('已取消清空操作');
+            }
+            setTimeout(() => this.showMeun(),500);
+        });
+    }
+
+    /**
+     * 查看统计信息
+     */
+    async viewStats() {
+        try {
+            console.log('\n📊 历史记录统计');
+            console.log('='.repeat(40));
+
+            const stats = await this.historyManager.getStats();
+
+            console.log(`总查询次数: ${stats.total}`);
+              console.log(`今日查询: ${stats.today}`);
+              console.log(`昨日查询: ${stats.yesterday}`);
+              console.log(`当前天气查询: ${stats.queryTypeCounts.current}`);
+              console.log(`天气预报查询: ${stats.queryTypeCounts.forecast}`);
+
+              if (stats.mostFrequentCities.length > 0) {
+                console.log('\n最常查询的城市:');
+                stats.mostFrequentCities.forEach((city, index) => {
+                  console.log(`  ${index + 1}. ${city.city}: ${city.count} 次`);
+                });
+              }
+              console.log('='.repeat(40));
+        } catch (error) {
+            console.error('❌ 获取统计信息失败:', error.message);
+        } finally {
+            setTimeout(() => this.showMeun(), 1000);
+        }
+    }
 }
 
 //如果直接运行这个文件
