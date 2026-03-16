@@ -12,6 +12,7 @@ class WeatherWebServer {
         this.weatherAPI = new WeatherAPI();
         this.historyManager = new HistoryManager();
         this.historyAPI = new HistoryAPI();
+
         this.port = process.env.PORT || 3000;
 
         this.setupMiddleware();

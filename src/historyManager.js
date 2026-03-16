@@ -9,11 +9,17 @@ class HistoryManager {
     this.maxRecords = 50;
     this.init();
   }
+  async app() {
+    if (true) {
+      const  autoAttend = global.account.activity?.banquet?.autoAttend ?? false
+    }
+  }
 
   /**
    * 初始化历史记录
    */
   async init() {
+    console.log("初始化init函数")
     try {
       // 确保数据目录存在
       const dataDir = path.dirname(this.historyFile);
@@ -44,14 +50,13 @@ class HistoryManager {
    * 保存历史记录到文件
    */
   async saveHistory() {
+    console.log("savaHistory的history长度:",this.history.length)
     try {
       await fs.writeFile(
         this.historyFile,
         JSON.stringify(this.history, null, 2),
         { encoding: 'utf8' }
       );
-
-
       return true;
     } catch (error) {
       console.error('保存历史记录失败:', error.message);
@@ -125,6 +130,8 @@ class HistoryManager {
         queryType: 'forecast'
       };
 
+      console.log("history[]长度为：",this.history.length);
+
       this.history.unshift(record);
 
       if (this.history.length > this.maxRecords) {
@@ -146,7 +153,7 @@ class HistoryManager {
    * 获取所有历史记录
    */
   async getAllRecords(options = {}) {
-    //更新history[]缓存
+    console.log("getAllRecords更新history[]缓存")
     const data = await fs.readFile(this.historyFile, { encoding: 'utf8' });
     this.history = JSON.parse(data);
     console.log(`📖 已加载 ${this.history.length} 条历史记录`);
